@@ -1,0 +1,27 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto21
+      docker: 20
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password | docker login --username AWS --password-stdin 677450898543.dkr.ecr.ap-southeast-1.amazonaws.com
+  build:
+    commands:
+      - echo Building Maven project...
+      - mvn clean package -DskipTests
+      - echo Building Docker image...
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - docker build -t ecommerce-product-service:$IMAGE_TAG .
+      - docker tag ecommerce-product-service:$IMAGE_TAG 677450898543.dkr.ecr.ap-southeast-1.amazonaws.com/ecommerce-product-service:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - echo Pushing Docker image...
+      - docker push 677450898543.dkr.ecr.ap-southeast-1.amazonaws.com/ecommerce-product-service:$IMAGE_TAG
+artifacts:
+  files:
+    - target/*.jar
