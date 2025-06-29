@@ -10,6 +10,8 @@ public class ProductController {
 
     @GetMapping("/productCheck")
     public String productHealthCheck(){
+
+        System.out.println("hello msg");
         return "Product Service Working properly";
     }
 }
