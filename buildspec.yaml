@@ -1,26 +1,60 @@
 version: 0.2
 
+env:
+  variables:
+    DOMAIN: "ecommerce-domain"
+    REPOSITORY: "ecommerce-shared"
+    REGION: "ap-southeast-1"
+
 phases:
   install:
     runtime-versions:
       java: corretto21
+    commands:
+      - echo Authenticating to AWS and CodeArtifact...
+      - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain $DOMAIN --region $REGION --query authorizationToken --output text)
+      - echo Generating settings.xml...
+      - mkdir -p ~/.m2
+      - |
+        cat > ~/.m2/settings.xml <<EOL
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
+          <mirrors>
+            <mirror>
+              <id>codeartifact</id>
+              <mirrorOf>*</mirrorOf>
+              <url>https://$DOMAIN-$AWS_ACCOUNT_ID.d.codeartifact.$REGION.amazonaws.com/maven/$REPOSITORY/</url>
+            </mirror>
+          </mirrors>
+          <servers>
+            <server>
+              <id>codeartifact</id>
+              <username>aws</username>
+              <password>${CODEARTIFACT_AUTH_TOKEN}</password>
+            </server>
+          </servers>
+        </settings>
+        EOL
+
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password | docker login --username AWS --password-stdin 677450898543.dkr.ecr.ap-southeast-1.amazonaws.com
+      - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
   build:
     commands:
-      - echo Building Maven project...
-      - mvn clean package -DskipTests
+      - echo Building Maven project with CodeArtifact...
+      - mvn clean package -DskipTests -s ~/.m2/settings.xml
       - echo Building Docker image...
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - docker build -t ecommerce-product-service:$IMAGE_TAG .
-      - docker tag ecommerce-product-service:$IMAGE_TAG 677450898543.dkr.ecr.ap-southeast-1.amazonaws.com/ecommerce-product-service:$IMAGE_TAG
+      - docker tag ecommerce-product-service:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/ecommerce-product-service:$IMAGE_TAG
 
   post_build:
     commands:
-      - echo Pushing Docker image...
-      - docker push 677450898543.dkr.ecr.ap-southeast-1.amazonaws.com/ecommerce-product-service:$IMAGE_TAG
+      - echo Pushing Docker image to ECR...
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/ecommerce-product-service:$IMAGE_TAG
+
 artifacts:
   files:
     - target/*.jar
