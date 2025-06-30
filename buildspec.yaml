@@ -46,7 +46,6 @@ phases:
           </servers>
         </settings>
         EOL
-  
 
   pre_build:
     commands:
