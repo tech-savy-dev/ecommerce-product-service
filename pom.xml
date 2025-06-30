@@ -23,6 +23,9 @@
     <repository>
       <id>codeartifact</id>
       <url>https://ecommerce-domain-677450898543.d.codeartifact.ap-southeast-1.amazonaws.com/maven/ecommerce-shared/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
     </repository>
   </repositories>
 
