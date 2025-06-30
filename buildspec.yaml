@@ -11,10 +11,21 @@ phases:
     runtime-versions:
       java: corretto21
     commands:
-      - echo Authenticating to AWS and CodeArtifact...
+      - echo "[INSTALL] Running aws sts get-caller-identity..."
+      - aws sts get-caller-identity
+
+      - echo "[INSTALL] Extracting AWS Account ID..."
       - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-      - export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain $DOMAIN --region $REGION --query authorizationToken --output text)
-      - echo Generating settings.xml...
+
+      - echo "[INSTALL] Exporting CodeArtifact auth token..."
+      - export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain $DOMAIN --domain-owner $AWS_ACCOUNT_ID --region $REGION --query authorizationToken --output text)
+      - echo "[DEBUG] CODEARTIFACT_AUTH_TOKEN first 10 chars:" $(echo $CODEARTIFACT_AUTH_TOKEN | cut -c1-10)
+      - echo "[INSTALL] Running aws codeartifact get-authorization-token..."
+      - aws codeartifact get-authorization-token --domain $DOMAIN --domain-owner $AWS_ACCOUNT_ID --region $REGION
+
+
+
+      - echo "[INSTALL] Generating Maven settings.xml for CodeArtifact..."
       - mkdir -p ~/.m2
       - |
         cat > ~/.m2/settings.xml <<EOL
@@ -23,7 +34,7 @@ phases:
             <mirror>
               <id>codeartifact</id>
               <mirrorOf>*</mirrorOf>
-              <url>https://$DOMAIN-$AWS_ACCOUNT_ID.d.codeartifact.$REGION.amazonaws.com/maven/$REPOSITORY/</url>
+              <url>https://${DOMAIN}-${AWS_ACCOUNT_ID}.d.codeartifact.${REGION}.amazonaws.com/maven/${REPO}/</url>
             </mirror>
           </mirrors>
           <servers>
@@ -35,6 +46,7 @@ phases:
           </servers>
         </settings>
         EOL
+  
 
   pre_build:
     commands:
