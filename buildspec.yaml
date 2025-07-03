@@ -22,9 +22,6 @@ phases:
 
       - echo "[INSTALL] Exporting CodeArtifact auth token..."
       - export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain $DOMAIN --domain-owner $AWS_ACCOUNT_ID --region $REGION --query authorizationToken --output text)
-      - echo "[DEBUG] CODEARTIFACT_AUTH_TOKEN first 10 chars:" $(echo $CODEARTIFACT_AUTH_TOKEN | cut -c1-10)
-      - echo "[INSTALL] Running aws codeartifact get-authorization-token..."
-      - aws codeartifact get-authorization-token --domain $DOMAIN --domain-owner $AWS_ACCOUNT_ID --region $REGION
 
       - echo "[INSTALL] Generating Maven settings.xml for CodeArtifact..."
       - mkdir -p ~/.m2
@@ -67,35 +64,31 @@ phases:
     commands:
       - echo Pushing Docker image to ECR...
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/ecommerce-product-service-dev:$IMAGE_TAG
-
-      # === Deploy Stage ===
       - echo "Fetching current ECS task definition..."
-      - TASK_DEF_JSON=$(aws ecs describe-task-definition --task-definition $TASK_DEF_NAME)
+      - |
+        TASK_DEF_JSON=$(aws ecs describe-task-definition --task-definition $TASK_DEF_NAME)
 
       - echo "Creating new ECS task definition with updated image..."
-      - NEW_TASK_DEF=$(echo "$TASK_DEF_JSON" | jq --arg IMAGE "$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/ecommerce-product-service-dev:$IMAGE_TAG" '
-      - {
-          - family: .taskDefinition.family,
-          - executionRoleArn: .taskDefinition.executionRoleArn,
-          - taskRoleArn: .taskDefinition.taskRoleArn,
-          - networkMode: .taskDefinition.networkMode,
-          - containerDefinitions: (.taskDefinition.containerDefinitions | map(.image = $IMAGE)),
-          - requiresCompatibilities: .taskDefinition.requiresCompatibilities,
-          - cpu: .taskDefinition.cpu,
-          - memory: .taskDefinition.memory
-        })
+      - |
+        NEW_TASK_DEF=$(echo "$TASK_DEF_JSON" | jq --arg IMAGE "$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/ecommerce-product-service-dev:$IMAGE_TAG" '
+          {
+            family: .taskDefinition.family,
+            executionRoleArn: .taskDefinition.executionRoleArn,
+            taskRoleArn: .taskDefinition.taskRoleArn,
+            networkMode: .taskDefinition.networkMode,
+            containerDefinitions: (.taskDefinition.containerDefinitions | map(.image = $IMAGE)),
+            requiresCompatibilities: .taskDefinition.requiresCompatibilities,
+            cpu: .taskDefinition.cpu,
+            memory: .taskDefinition.memory
+          }')
+
       - echo "$NEW_TASK_DEF" > new-task-def.json
-
       - echo "Registering new task definition..."
-      - NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
-
-      - echo "Updating ECS service with new task definition..."
-      - aws ecs update-service \
-        --cluster $CLUSTER_NAME \
-        --service $SERVICE_NAME \
-        --task-definition $NEW_TASK_DEF_ARN \
-        --region $REGION \
-        --force-new-deployment
+      - |
+        NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
+      - echo "Updating ECS service..."
+      - |
+        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition $NEW_TASK_DEF_ARN --region $REGION --force-new-deployment
 
 artifacts:
   files:
