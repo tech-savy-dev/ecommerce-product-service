@@ -1,0 +1,9 @@
+version: 1
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: "REPLACE_TASK_DEFINITION"
+        LoadBalancerInfo:
+          ContainerName: "ecommerce-product-service"
+          ContainerPort: 8080
