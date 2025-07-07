@@ -69,7 +69,7 @@ phases:
 
 artifacts:
   files:
-    - target/*.jar
     - taskdef.json
     - appspec.yaml
     - taskdef-arn.txt
+
