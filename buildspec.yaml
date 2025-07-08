@@ -71,6 +71,7 @@ phases:
       - sed -i "s|<TASK_DEF_ARN>|$TASK_DEF_ARN|" appspec.yaml
       - echo $TASK_DEF_ARN > taskdef-arn.txt
 
+
 artifacts:
   files:
     - taskdef.json
