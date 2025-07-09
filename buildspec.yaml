@@ -5,7 +5,7 @@ env:
     DOMAIN: "ecommerce-domain"
     REPO: "ecommerce-shared"
     REGION: "ap-southeast-1"
-    ECR_REPO_NAME: "ecommerce-product-service-dev"
+    ECR_REPO_NAME: "dev-ecommerce-product-service"
 
 phases:
   install:

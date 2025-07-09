@@ -15,7 +15,7 @@
           "protocol": "tcp"
         }
       ],
-      "logConfiguration": {
+      "logConfiguration": {x
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/ecommerce-product-service",
