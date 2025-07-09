@@ -1,5 +1,5 @@
 {
-  "family": "ecommerce-product-service-dev",
+  "family": "dev-ecommerce-product-service",
   "executionRoleArn": "<EXECUTION_ROLE_ARN>",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
@@ -15,7 +15,7 @@
           "protocol": "tcp"
         }
       ],
-      "logConfiguration": {x
+      "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/ecommerce-product-service",
