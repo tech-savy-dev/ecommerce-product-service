@@ -11,7 +11,7 @@ public class ProductController {
     @GetMapping("/productCheck")
     public String productHealthCheck(){
 
-        System.out.println("hello msg45 gitpod");
+        System.out.println("hello msg45 Gitcopilot");
         return "Product Service Working properly";
     }
 }
