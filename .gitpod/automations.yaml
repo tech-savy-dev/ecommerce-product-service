@@ -1,0 +1,13 @@
+tasks:
+    command-0:
+        command: ./mvnw spring-boot:run
+        dependsOn:
+            - init-000
+        description: init task migrated from .gitpod.yml
+        name: 'Init & Build: command'
+        triggeredBy:
+            - postDevcontainerStart
+    init-000:
+        command: ./mvnw clean install -DskipTests
+        description: init task migrated from .gitpod.yml
+        name: 'Init & Build: init'
