@@ -40,7 +40,7 @@
     </dependency>
     <dependency>
       <groupId>com.ecommerce</groupId>
-      <artifactId>shared-lib</artifactId>
+      <artifactId>ecommerce-shared-lib</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
