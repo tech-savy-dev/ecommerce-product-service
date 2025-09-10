@@ -10,3 +10,7 @@ management:
       exposure:
         include: health
       base-path: /product/api/actuator
+
+jwt:
+  secret: SOME256BIT_SECRET_KEY_SHOULD_BE_32+CHARS_ECOMMERCE_256_CHARS_DEMO_INVERT
+  expiration: 3600000
