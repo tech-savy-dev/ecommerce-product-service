@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
 spring:
   application:
     name: product-service
@@ -9,8 +9,17 @@ management:
     web:
       exposure:
         include: health
-      base-path: /product/api/actuator
+      base-path: /actuator
 
-jwt:
-  secret: SOME256BIT_SECRET_KEY_SHOULD_BE_32+CHARS_ECOMMERCE_256_CHARS_DEMO_INVERT
-  expiration: 3600000
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.ecommerce: DEBUG
+    org.springframework.web: INFO
+
+internal:
+  jwt:
+    issuer: https://bff.example.com
+    jwks-uri: http://localhost:8080/.well-known/jwks.json
+    audience: internal-services
+    jwks-cache-seconds: 300
