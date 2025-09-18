@@ -9,7 +9,7 @@ management:
     web:
       exposure:
         include: health
-      base-path: /actuator
+      base-path: /p/actuator
 
 logging:
   level:
